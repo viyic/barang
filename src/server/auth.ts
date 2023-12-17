@@ -5,7 +5,7 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -47,11 +47,29 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   },
+  session: {
+    strategy: "jwt",
+  },
   adapter: DrizzleAdapter(db, mysqlTable),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    CredentialsProvider({
+      name: "Kasir",
+      credentials: {
+        username: {
+          label: "Nama Pengguna",
+          type: "text",
+          placeholder: "Nama Pengguna",
+        },
+        password: { label: "Kata Sandi", type: "password" },
+      },
+      async authorize(credentials, req) {
+        const user = { id: "1", nama: "test" };
+        if (user) {
+          return user;
+        }
+
+        return null;
+      },
     }),
     /**
      * ...add more providers here.
