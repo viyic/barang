@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   bigint,
   index,
@@ -25,8 +25,8 @@ export const mysqlTable = mysqlTableCreator((name) => `${name}`); // `barang_${n
 export const barang = mysqlTable("barang", {
   id: char("id", { length: 15 }).primaryKey(),
   nama: varchar("nama", { length: 200 }),
-  hargaBeli: double("hargabeli"),
-  hargaJual: double("hargajual"),
+  hargaBeli: double("hargabeli").notNull(),
+  hargaJual: double("hargajual").notNull(),
   idSatuan: char("id_satuan", { length: 5 }).references(() => satuan.id),
   idKategori: char("id_kategori", { length: 5 }).references(() => kategori.id),
   qr: text("qr"),
@@ -92,3 +92,7 @@ export const transaksiDetail = mysqlTable("transaksiDetail", {
   retur: char("retur", { length: 2 }),
   idKasir: char("id_kasir", { length: 5 }),
 });
+
+export type Barang = InferSelectModel<typeof barang>;
+export type Kategori = InferSelectModel<typeof kategori>;
+export type Satuan = InferSelectModel<typeof satuan>;

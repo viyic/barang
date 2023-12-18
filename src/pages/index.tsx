@@ -5,7 +5,7 @@ import { ChangeEvent, forwardRef, useRef, useState } from "react";
 
 import { api } from "~/utils/api";
 
-export default function Home() {
+export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const usernameHandleChange = (e: ChangeEvent<HTMLInputElement>) =>
@@ -57,7 +57,7 @@ export default function Home() {
         data-theme="nord"
         className="flex h-full min-h-screen flex-col items-center justify-center"
       >
-        <div className="card bg-base-100 w-96 shadow-xl">
+        <div className="card w-96 bg-base-100 shadow-xl">
           <div className="card-body flex flex-col items-center gap-4">
             <h2 className="card-title">Masuk</h2>
             <input

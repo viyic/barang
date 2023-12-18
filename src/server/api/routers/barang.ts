@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -8,14 +9,6 @@ import {
 import { barang } from "~/server/db/schema";
 
 export const barangRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   // create: protectedProcedure
   //   .input(z.object({ name: z.string().min(1) }))
   //   .mutation(async ({ ctx, input }) => {
@@ -37,6 +30,24 @@ export const barangRouter = createTRPCRouter({
       // orderBy: (barang, { desc }) => [desc(barang.id)],
     });
   }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.barang.findFirst({
+        with: {
+          kategori: true,
+          satuan: true,
+        },
+        where: (barang, { eq }) => eq(barang.id, input.id),
+      });
+    }),
+
+  delete: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db.delete(barang).where(eq(barang.id, input.id));
+    }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
