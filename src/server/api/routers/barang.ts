@@ -6,7 +6,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { barang } from "~/server/db/schema";
+import { Barang, barang } from "~/server/db/schema";
 
 export const barangRouter = createTRPCRouter({
   // create: protectedProcedure
@@ -27,6 +27,7 @@ export const barangRouter = createTRPCRouter({
         kategori: true,
         satuan: true,
       },
+      limit: 10,
       // orderBy: (barang, { desc }) => [desc(barang.id)],
     });
   }),
@@ -41,6 +42,49 @@ export const barangRouter = createTRPCRouter({
         },
         where: (barang, { eq }) => eq(barang.id, input.id),
       });
+    }),
+
+  create: publicProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        nama: z.string().min(1),
+        hargaBeli: z.number(),
+        hargaJual: z.number(),
+        idSatuan: z.string().min(1),
+        idKategori: z.string().nullable(),
+        keterangan: z.string().nullable(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      const barangNew: Barang = {
+        ...input,
+        qr: "testing",
+      };
+      return ctx.db.insert(barang).values(barangNew);
+    }),
+
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        nama: z.string().min(1),
+        hargaBeli: z.number(),
+        hargaJual: z.number(),
+        idSatuan: z.string().min(1),
+        idKategori: z.string().nullable(),
+        keterangan: z.string().nullable(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      const barangEdit: Barang = {
+        ...input,
+        qr: "testing",
+      };
+      return ctx.db
+        .update(barang)
+        .set(barangEdit)
+        .where(eq(barang.id, input.id));
     }),
 
   delete: publicProcedure

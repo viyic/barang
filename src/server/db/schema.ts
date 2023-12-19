@@ -24,10 +24,12 @@ export const mysqlTable = mysqlTableCreator((name) => `${name}`); // `barang_${n
 
 export const barang = mysqlTable("barang", {
   id: char("id", { length: 15 }).primaryKey(),
-  nama: varchar("nama", { length: 200 }),
+  nama: varchar("nama", { length: 200 }).notNull(),
   hargaBeli: double("hargabeli").notNull(),
   hargaJual: double("hargajual").notNull(),
-  idSatuan: char("id_satuan", { length: 5 }).references(() => satuan.id),
+  idSatuan: char("id_satuan", { length: 5 })
+    .references(() => satuan.id)
+    .notNull(),
   idKategori: char("id_kategori", { length: 5 }).references(() => kategori.id),
   qr: text("qr"),
   keterangan: text("keterangan"),

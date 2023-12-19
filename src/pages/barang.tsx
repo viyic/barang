@@ -13,24 +13,30 @@ export default function BarangPage() {
 
   const utils = api.useUtils().client;
 
-  const [editId, setEditId] = useState("");
-  // const editBarang = api.barang.getById.useQuery(
-  //   { id: editId },
-  //   { enabled: false },
-  // );
-  const editBarangSubmit = api.barang.getById.useQuery(
-    { id: editId },
-    { enabled: false },
-  );
-  // const kasir = api.kasir.getAll.useQuery();
+  const tambahModal = useRef<HTMLDialogElement>(null);
+  const editModal = useRef<HTMLDialogElement>(null);
 
+  const tambahBarang = api.barang.create.useMutation();
+  const tambahForm = useForm<Barang>();
+  const tambahOnSubmit: SubmitHandler<Barang> = (data) => {
+    console.log(data);
+    tambahBarang.mutate(data, { onSettled: () => void barangList.refetch() });
+    tambahModal.current?.close();
+    tambahForm.reset();
+  };
+
+  const editBarang = api.barang.update.useMutation();
   const editForm = useForm<Barang>();
   const editOnSubmit: SubmitHandler<Barang> = (data) => {
     console.log(data);
+    editBarang.mutate(data, { onSettled: () => void barangList.refetch() });
+    editModal.current?.close();
   };
 
-  const tambahModal = useRef<HTMLDialogElement>(null);
-  const editModal = useRef<HTMLDialogElement>(null);
+  const hapusBarang = api.barang.delete.useMutation();
+  const hapus = (id: string) => {
+    hapusBarang.mutate({ id }, { onSettled: () => void barangList.refetch() });
+  };
 
   const tambahModalShow = () => {
     if (tambahModal.current) {
@@ -53,28 +59,6 @@ export default function BarangPage() {
       editForm.setValue("idSatuan", editBarang.idSatuan);
       editModal.current?.showModal();
     }
-
-    // editBarang
-    //   .refetch()
-    //   .then((result) => {
-    //     console.log(result.data);
-    //     if (result.data) {
-    //       editModal.current?.showModal();
-    //     } else {
-    //       // what are you doing here?!
-    //     }
-    //   })
-    //   .catch((err) => {
-    // empty
-    // });
-  };
-
-  const tambahModalSubmit = () => {
-    // empty
-  };
-
-  const editModalSubmit = () => {
-    // empty
   };
 
   // const openToast = (text) => {
@@ -93,59 +77,6 @@ export default function BarangPage() {
     return `Rp. ${jumlah.toLocaleString("id")}`;
   };
 
-  // const tambah = () => {
-  //     axios.post(`<?= base_url() ?>api`, document.querySelector('#formTambah'), {
-  //             headers: {
-  //                 'Content-Type': 'multipart/form-data',
-  //             }
-  //         })
-  //         .then((response) => {
-  //             if (response.status == 201) {
-  //                 openToast('Berhasil menambah barang');
-  //             }
-  //         })
-  //         .catch((error) => {
-  //             console.log(error);
-  //             openToast('Gagal menambah barang');
-  //         });
-  // }
-  // const edit = () => {
-  //     const id = document.querySelector('#editId').value;
-  //     axios.post(`<?= base_url() ?>api/${id}`, document.querySelector('#formEdit'), {
-  //             headers: {
-  //                 'Content-Type': 'multipart/form-data',
-  //             }
-  //         })
-  //         .then((response) => {
-  //             if (response.status == 201) {
-  //                 openToast('Berhasil menambah barang');
-  //             }
-  //         })
-  //         .catch((error) => {
-  //             console.log(error);
-  //             openToast('Gagal menambah barang');
-  //         });
-  // }
-  // const showEditModal = (id) => {
-  //     axios.get(`<?= base_url() ?>api/${id}`)
-  //         .then((response) => {
-  //             const data = response.data;
-  //             document.querySelector('#editId').value = data.id;
-  //             document.querySelector('#editNama').value = data.nama;
-  //             document.querySelector('#editHargaBeli').value = data.hargabeli;
-  //             document.querySelector('#editHargaJual').value = data.hargajual;
-  //             document.querySelector('#editSatuan').value = data.id_satuan;
-  //             document.querySelector('#editKategori').value = data.id_kategori;
-  //             editModal.showModal();
-  //         })
-  //         .catch((error) => {
-  //             openToast(error);
-  //         })
-  // };
-  const hapusBarang = api.barang.delete.useMutation();
-  const hapus = (id: string) => {
-    hapusBarang.mutate({ id });
-  };
   // new Grid({
   //   columns: [
   //     "ID",
@@ -177,18 +108,7 @@ export default function BarangPage() {
   //     // endforeach; ?>
   //   ],
   // }).render(document.getElementById("table"));
-  /* {barang.data
-            ? barang.data.map((b) => (
-                <li>
-                  {b.nama} - {b.hargaBeli}
-                </li>
-              ))
-            : "Loading"}
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
-            <AuthShowcase /> */
+  /* <AuthShowcase /> */
 
   return (
     <Layout title="Barang">
@@ -197,10 +117,10 @@ export default function BarangPage() {
         <button type="button" className="btn mt-4" onClick={tambahModalShow}>
           Tambah
         </button>
-        <div id="table"></div>
+        {/* <div id="table"></div> */}
 
         {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
-        <div className="overflow-x-auto">
+        <div className="mt-4 overflow-x-auto">
           <table className="table">
             <thead>
               <tr>
@@ -220,37 +140,47 @@ export default function BarangPage() {
               </tr>
             </thead>
             <tbody>
-              {barangList.data?.map((b) => (
-                <tr className="hover" key={b.id}>
-                  <td>{b.id}</td>
-                  <td>{b.nama}</td>
-                  <td>{formatRupiah(b.hargaBeli)}</td>
-                  <td>{formatRupiah(b.hargaJual)}</td>
-                  <td>{b.satuan?.nama}</td>
-                  <td>{b.kategori?.nama}</td>
-                  <td>{b.keterangan}</td>
-                  <td className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await editModalShow(b.id);
-                      }}
-                      className="btn btn-info"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        hapus(b.id);
-                      }}
-                      className="btn btn-error"
-                    >
-                      Hapus
-                    </button>
+              {barangList.status == "loading" ? (
+                <tr>
+                  <td colSpan={8} className="h-48 text-center text-xl">
+                    <span className="loading loading-spinner loading-lg"></span>
+                    <br />
+                    Memuat...
                   </td>
                 </tr>
-              ))}
+              ) : (
+                barangList.data?.map((b) => (
+                  <tr className="hover" key={b.id}>
+                    <td>{b.id}</td>
+                    <td>{b.nama}</td>
+                    <td>{formatRupiah(b.hargaBeli)}</td>
+                    <td>{formatRupiah(b.hargaJual)}</td>
+                    <td>{b.satuan?.nama}</td>
+                    <td>{b.kategori?.nama}</td>
+                    <td>{b.keterangan}</td>
+                    <td className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void editModalShow(b.id);
+                        }}
+                        className="btn btn-info"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          hapus(b.id);
+                        }}
+                        className="btn btn-error"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -287,33 +217,45 @@ export default function BarangPage() {
             <h3 className="pb-4 text-center text-lg font-bold">
               Tambah Barang
             </h3>
-            <form id="formTambah">
+            <form
+              id="formTambah"
+              onSubmit={tambahForm.handleSubmit(tambahOnSubmit)}
+            >
               <div className="flex flex-col gap-4">
                 <input
                   type="text"
                   placeholder="ID"
-                  name="id"
+                  {...tambahForm.register("id", { required: true })}
                   className="input input-bordered"
                 />
                 <input
                   type="text"
                   placeholder="Nama Barang"
-                  name="nama"
+                  {...tambahForm.register("nama", { required: true })}
                   className="input input-bordered"
                 />
                 <input
                   type="text"
                   placeholder="Harga Beli"
-                  name="harga_beli"
+                  {...tambahForm.register("hargaBeli", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                   className="input input-bordered"
                 />
                 <input
                   type="text"
                   placeholder="Harga Jual"
-                  name="harga_jual"
+                  {...tambahForm.register("hargaJual", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                   className="input input-bordered"
                 />
-                <select name="id_satuan" className="select select-bordered">
+                <select
+                  {...tambahForm.register("idSatuan", { required: true })}
+                  className="select select-bordered"
+                >
                   <option value="">Pilih Satuan</option>
                   {satuanList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
@@ -321,7 +263,10 @@ export default function BarangPage() {
                     </option>
                   ))}
                 </select>
-                <select name="id_kategori" className="select select-bordered">
+                <select
+                  {...tambahForm.register("idKategori", { required: true })}
+                  className="select select-bordered"
+                >
                   <option value="">Pilih Kategori</option>
                   {kategoriList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
@@ -330,17 +275,13 @@ export default function BarangPage() {
                   ))}
                 </select>
                 <textarea
-                  name="keterangan"
+                  {...tambahForm.register("keterangan")}
                   placeholder="Keterangan"
                   rows={4}
                   className="textarea textarea-bordered"
                 ></textarea>
                 <div className="text-right">
-                  <button
-                    type="button"
-                    className="btn btn-success"
-                    onClick={tambahModalSubmit}
-                  >
+                  <button type="submit" className="btn btn-success">
                     Buat
                   </button>
                 </div>
@@ -364,7 +305,7 @@ export default function BarangPage() {
                   placeholder="ID Barang"
                   id="editId"
                   className="input input-bordered"
-                  {...editForm.register("id")}
+                  {...editForm.register("id", { required: true })}
                   disabled
                 />
                 <input
@@ -372,26 +313,26 @@ export default function BarangPage() {
                   placeholder="Nama Barang"
                   id="editNama"
                   className="input input-bordered"
-                  {...editForm.register("nama")}
+                  {...editForm.register("nama", { required: true })}
                 />
                 <input
                   type="text"
                   placeholder="Harga Beli"
                   id="editHargaBeli"
                   className="input input-bordered"
-                  {...editForm.register("hargaBeli")}
+                  {...editForm.register("hargaBeli", { valueAsNumber: true })}
                 />
                 <input
                   type="text"
                   placeholder="Harga Jual"
                   id="editHargaJual"
                   className="input input-bordered"
-                  {...editForm.register("hargaJual")}
+                  {...editForm.register("hargaJual", { valueAsNumber: true })}
                 />
                 <select
                   id="editSatuan"
                   className="select select-bordered"
-                  {...editForm.register("idSatuan")}
+                  {...editForm.register("idSatuan", { required: true })}
                 >
                   <option value="">Pilih Satuan</option>
                   {satuanList.data?.map((v) => (
@@ -403,7 +344,7 @@ export default function BarangPage() {
                 <select
                   id="editKategori"
                   className="select select-bordered"
-                  {...editForm.register("idKategori")}
+                  {...editForm.register("idKategori", { required: true })}
                 >
                   <option value="">Pilih Kategori</option>
                   {kategoriList.data?.map((v) => (
