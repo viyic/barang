@@ -59,10 +59,10 @@ export const barangRelations = relations(barang, ({ one }) => ({
 
 export const kasir = mysqlTable("kasir", {
   id: char("id", { length: 25 }).primaryKey(),
-  nama: varchar("nama", { length: 200 }),
-  status: char("status", { length: 2 }),
-  username: varchar("username", { length: 200 }),
-  password: text("password"),
+  nama: varchar("nama", { length: 200 }).notNull(),
+  status: char("status", { length: 2 }).notNull(),
+  username: varchar("username", { length: 200 }).notNull(),
+  password: text("password").notNull(),
 });
 
 export const channel = mysqlTable("channel", {
@@ -96,5 +96,6 @@ export const transaksiDetail = mysqlTable("transaksiDetail", {
 });
 
 export type Barang = InferSelectModel<typeof barang>;
+export type Kasir = InferSelectModel<typeof kasir>;
 export type Kategori = InferSelectModel<typeof kategori>;
 export type Satuan = InferSelectModel<typeof satuan>;

@@ -2,6 +2,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { forwardRef, useRef } from "react";
+import Layout from "~/components/Layout";
 
 import { api } from "~/utils/api";
 
@@ -121,27 +122,7 @@ export default function Dasbor() {
   // }).render(document.getElementById('table'));
 
   return (
-    <>
-      <Head>
-        <title>Dasbor</title>
-        <meta name="description" content="Barang" />
-        <link rel="icon" href="/favicon.ico" />
-        {/* <link
-          rel="stylesheet"
-          href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css"
-        />
-        <script
-          src="https://unpkg.com/gridjs/dist/gridjs.umd.js"
-          async
-        ></script>
-        <script src="https://unpkg.com/axios/dist/axios.min.js" async></script>
-        <link
-          href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css"
-          rel="stylesheet"
-          type="text/css"
-        /> */}
-      </Head>
-
+    <Layout title="Dasbor">
       {/* {barang.data
             ? barang.data.map((b) => (
                 <li>
@@ -154,127 +135,51 @@ export default function Dasbor() {
               {hello.data ? hello.data.greeting : "Loading tRPC query..."}
             </p>
             <AuthShowcase /> */}
-      <main data-theme="nord" className="min-h-screen">
-        <div className="navbar bg-accent">
-          <div className="navbar-start">
-            <div className="dropdown">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost lg:hidden"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 6h16M4 12h8m-8 6h16"
-                  />
-                </svg>
-              </div>
-              <ul
-                tabIndex={0}
-                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-              >
-                <li>
-                  <a>Item 1</a>
-                </li>
-                <li>
-                  <a>Parent</a>
-                  <ul className="p-2">
-                    <li>
-                      <a>Submenu 1</a>
-                    </li>
-                    <li>
-                      <a>Submenu 2</a>
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  <a>Item 3</a>
-                </li>
-              </ul>
+
+      <div className="container mx-auto">
+        <div className="mt-4 text-4xl font-bold">Dashboard</div>
+        {/* Modal Tambah */}
+        <ModalTambah ref={modalTambah} />
+
+        {/* <!-- Modal Edit --> */}
+        <ModalEdit ref={modalEdit} />
+        {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="card mt-4 bg-success text-4xl shadow-xl">
+            <div className="card-body">
+              {barang.data ? `${barang.data.length} Barang` : "Memuat..."}
             </div>
-            {/* <a className="btn btn-ghost text-xl">daisyUI</a> */}
           </div>
-          <div className="navbar-center hidden lg:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li>
-                <a>Item 1</a>
-              </li>
-              <li>
-                <details>
-                  <summary>Parent</summary>
-                  <ul className="p-2">
-                    <li>
-                      <a>Submenu 1</a>
-                    </li>
-                    <li>
-                      <a>Submenu 2</a>
-                    </li>
-                  </ul>
-                </details>
-              </li>
-              <li>
-                <a>Item 3</a>
-              </li>
-            </ul>
-          </div>
-          <div className="navbar-end">
-            <a className="btn">Log out</a>
-          </div>
-        </div>
-        <div className="container mx-auto">
-          <div className="mt-4 text-4xl font-bold">Dashboard</div>
-          <button type="button" className="btn mt-4" onClick={showModalTambah}>
-            Tambah
-          </button>
-          <div id="table"></div>
-
-          {/* Modal Tambah */}
-          <ModalTambah ref={modalTambah} />
-
-          {/* <!-- Modal Edit --> */}
-          <ModalEdit ref={modalEdit} />
-          {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
-          {barang.data
-            ? barang.data.map((b) => (
-                <li>
-                  {b.nama} - {b.hargaBeli} - {b.kategori?.nama}
-                </li>
-              ))
-            : "Loading"}
-
-          <div
-            className="toast toast-top toast-center hidden opacity-0 transition"
-            id="toast"
-          >
-            <div className="alert alert-error" id="alert">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 shrink-0 stroke-current"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>Error! Task failed successfully.</span>
+          <div className="card mt-4 bg-error text-4xl shadow-xl">
+            <div className="card-body">
+              {kasir.data ? `${kasir.data.length} Kasir` : "Memuat..."}
             </div>
           </div>
         </div>
-      </main>
-    </>
+
+        <div
+          className="toast toast-center toast-top hidden opacity-0 transition"
+          id="toast"
+        >
+          <div className="alert alert-error" id="alert">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Error! Task failed successfully.</span>
+          </div>
+        </div>
+      </div>
+    </Layout>
   );
 }
 
@@ -287,7 +192,7 @@ const ModalTambah = forwardRef<HTMLDialogElement>((props, ref) => {
     <dialog id="modalTambah" ref={ref} className="modal" {...props}>
       <div className="modal-box">
         <form method="dialog">
-          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
             ✕
           </button>
         </form>
@@ -367,7 +272,7 @@ const ModalEdit = forwardRef<HTMLDialogElement>((props, ref) => {
     <dialog id="modalEdit" className="modal" ref={ref} {...props}>
       <div className="modal-box">
         <form method="dialog">
-          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
             ✕
           </button>
         </form>
