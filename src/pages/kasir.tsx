@@ -42,9 +42,7 @@ export default function BarangPage() {
   };
 
   const editModalShow = async (id: string) => {
-    const editKasir = await utils.kasir.getById.query({
-      id,
-    });
+    const editKasir = await utils.kasir.getById.query({ id });
     if (editKasir) {
       console.log(editKasir);
       editForm.setValue("nama", editKasir.nama);
@@ -88,7 +86,9 @@ export default function BarangPage() {
                   // "Password",
                   "Aksi",
                 ].map((v, i) => (
-                  <th key={i}>{v}</th>
+                  <th key={i} className={v == "Aksi" ? "w-0" : undefined}>
+                    {v}
+                  </th>
                 ))}
               </tr>
             </thead>

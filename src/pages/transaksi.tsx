@@ -1,41 +1,43 @@
-import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useRef } from "react";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import Layout from "~/components/Layout";
-import { Barang } from "~/server/db/schema";
+import { type Transaksi } from "~/server/db/schema";
 
 import { api } from "~/utils/api";
 
 export default function BarangPage() {
-  const barangList = api.barang.getAll.useQuery();
-  const satuanList = api.satuan.getAll.useQuery();
-  const kategoriList = api.kategori.getAll.useQuery();
+  const transaksiList = api.transaksi.getAll.useQuery();
+  const channelList = api.channel.getAll.useQuery();
+  const kasirList = api.kasir.getAll.useQuery();
 
   const utils = api.useUtils().client;
 
   const tambahModal = useRef<HTMLDialogElement>(null);
   const editModal = useRef<HTMLDialogElement>(null);
 
-  const tambahBarang = api.barang.create.useMutation();
-  const tambahForm = useForm<Barang>();
-  const tambahOnSubmit: SubmitHandler<Barang> = (data) => {
+  const tambah = api.transaksi.create.useMutation();
+  const tambahForm = useForm<Transaksi>();
+  const tambahOnSubmit: SubmitHandler<Transaksi> = (data) => {
     console.log(data);
-    tambahBarang.mutate(data, { onSettled: () => void barangList.refetch() });
+    tambah.mutate(data, { onSettled: () => void transaksiList.refetch() });
     tambahModal.current?.close();
     tambahForm.reset();
   };
 
-  const editBarang = api.barang.update.useMutation();
-  const editForm = useForm<Barang>();
-  const editOnSubmit: SubmitHandler<Barang> = (data) => {
+  const edit = api.transaksi.update.useMutation();
+  const editForm = useForm<Transaksi>();
+  const editOnSubmit: SubmitHandler<Transaksi> = (data) => {
     console.log(data);
-    editBarang.mutate(data, { onSettled: () => void barangList.refetch() });
+    edit.mutate(data, { onSettled: () => void transaksiList.refetch() });
     editModal.current?.close();
   };
 
-  const hapusBarang = api.barang.delete.useMutation();
+  const hapusBarang = api.transaksi.delete.useMutation();
   const hapus = (id: string) => {
-    hapusBarang.mutate({ id }, { onSettled: () => void barangList.refetch() });
+    hapusBarang.mutate(
+      { id },
+      { onSettled: () => void transaksiList.refetch() },
+    );
   };
 
   const tambahModalShow = () => {
@@ -45,18 +47,20 @@ export default function BarangPage() {
   };
 
   const editModalShow = async (id: string) => {
-    const editBarang = await utils.barang.getById.query({
+    const editKasir = await utils.transaksi.getById.query({
       id,
     });
-    if (editBarang) {
-      console.log(editBarang);
-      editForm.setValue("nama", editBarang.nama);
-      editForm.setValue("id", editBarang.id);
-      editForm.setValue("hargaBeli", editBarang.hargaBeli);
-      editForm.setValue("hargaJual", editBarang.hargaJual);
-      editForm.setValue("keterangan", editBarang.keterangan);
-      editForm.setValue("idKategori", editBarang.idKategori);
-      editForm.setValue("idSatuan", editBarang.idSatuan);
+    if (editKasir) {
+      console.log(editKasir);
+      editForm.setValue("id", editKasir.id);
+      editForm.setValue("nama", editKasir.nama);
+      editForm.setValue("total", editKasir.total);
+      editForm.setValue("ppn", editKasir.ppn);
+      editForm.setValue("idChannel", editKasir.idChannel);
+      editForm.setValue("ref", editKasir.ref);
+      editForm.setValue("tanggalTransaksi", editKasir.tanggalTransaksi);
+      editForm.setValue("idKasir", editKasir.idKasir);
+      editForm.setValue("keterangan", editKasir.keterangan);
       editModal.current?.showModal();
     }
   };
@@ -73,98 +77,60 @@ export default function BarangPage() {
   //         }, 1000);
   //     }, 5000);
   // }
-  const formatRupiah = (jumlah: number) => {
-    return `Rp. ${jumlah.toLocaleString("id")}`;
-  };
-
-  // new Grid({
-  //   columns: [
-  //     "ID",
-  //     "Nama",
-  //     {
-  //       name: "Harga Beli",
-  //       formatter: (cell) => formatRupiah(cell),
-  //     },
-  //     {
-  //       name: "Harga Jual",
-  //       formatter: (cell) => formatRupiah(cell),
-  //     },
-  //     "Satuan",
-  //     "Kategori",
-  //     "Keterangan",
-  //     {
-  //       name: "Aksi",
-  //       formatter: (cell) =>
-  //         gridjs.html(
-  //           `<div class="flex gap-4 justify-center"><button class="btn btn-primary" onclick="showEditModal('${cell}')">Edit</button><button class="btn btn-error" onclick="hapus(${cell})">Hapus</button></div>`,
-  //         ),
-  //     },
-  //   ],
-  //   search: true,
-  //   pagination: true,
-  //   data: [
-  //     // <?php foreach ($barang as $b) :
-  //     //     echo "['$b->id', '$b->nama', $b->hargabeli, $b->hargajual, '$b->nama_satuan', '$b->nama_kategori', '$b->keterangan', '$b->id'],";
-  //     // endforeach; ?>
-  //   ],
-  // }).render(document.getElementById("table"));
-  /* <AuthShowcase /> */
 
   return (
-    <Layout title="Barang">
+    <Layout title="Transaksi">
       <div className="container mx-auto">
-        <div className="mt-4 text-4xl font-bold">Barang</div>
+        <div className="mt-4 text-4xl font-bold">Transaksi</div>
         <button type="button" className="btn mt-4" onClick={tambahModalShow}>
           Tambah
         </button>
-        {/* <div id="table"></div> */}
-
-        {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
         <div className="mt-4 overflow-x-auto">
           <table className="table">
             <thead>
               <tr>
                 {[
                   "ID",
-                  "Nama Barang",
-                  "Harga Beli",
-                  "Harga Jual",
-                  "Satuan",
-                  "Kategori",
-                  // "QR Code",
+                  "Nama Transaksi",
+                  "Total",
+                  "PPN",
+                  "Channel",
+                  "Ref",
+                  "Tanggal Transaksi",
+                  "Kasir",
                   "Keterangan",
                   "Aksi",
                 ].map((v, i) => (
-                  <th key={i} className={v == "Aksi" ? "w-0" : undefined}>
-                    {v}
-                  </th>
+                  <th key={i}>{v}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {barangList.status == "loading" ? (
+              {transaksiList.status == "loading" ? (
                 <tr>
-                  <td colSpan={8} className="h-48 text-center text-xl">
+                  <td colSpan={10} className="h-48 text-center text-xl">
                     <span className="loading loading-spinner loading-lg"></span>
                     <br />
                     Memuat...
                   </td>
                 </tr>
               ) : (
-                barangList.data?.map((b) => (
-                  <tr className="hover" key={b.id}>
-                    <td>{b.id}</td>
-                    <td>{b.nama}</td>
-                    <td>{formatRupiah(b.hargaBeli)}</td>
-                    <td>{formatRupiah(b.hargaJual)}</td>
-                    <td>{b.satuan?.nama}</td>
-                    <td>{b.kategori?.nama}</td>
-                    <td>{b.keterangan}</td>
+                transaksiList.data?.map((t) => (
+                  <tr className="hover" key={t.id}>
+                    <td>{t.id}</td>
+                    <td>{t.nama}</td>
+                    <td>{t.total}</td>
+                    <td>{t.ppn}</td>
+                    <td>{t.channel.nama}</td>
+                    <td>{t.ref}</td>
+                    <td>{t.tanggalTransaksi.toISOString()}</td>
+                    <td>{t.kasir.nama}</td>
+                    <td>{t.keterangan}</td>
                     <td className="flex gap-4">
                       <button
                         type="button"
                         onClick={() => {
-                          void editModalShow(b.id);
+                          void editModalShow(t.id);
                         }}
                         className="btn btn-info"
                       >
@@ -173,7 +139,7 @@ export default function BarangPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          hapus(b.id);
+                          hapus(t.id);
                         }}
                         className="btn btn-error"
                       >
@@ -217,7 +183,7 @@ export default function BarangPage() {
               </button>
             </form>
             <h3 className="pb-4 text-center text-lg font-bold">
-              Tambah Barang
+              Tambah Transaksi
             </h3>
             <form
               id="formTambah"
@@ -232,45 +198,53 @@ export default function BarangPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Nama Barang"
+                  placeholder="Nama Transaksi"
                   {...tambahForm.register("nama", { required: true })}
                   className="input input-bordered"
                 />
                 <input
                   type="text"
-                  placeholder="Harga Beli"
-                  {...tambahForm.register("hargaBeli", {
-                    required: true,
-                    valueAsNumber: true,
-                  })}
+                  placeholder="Total"
+                  {...tambahForm.register("total", { required: true })}
                   className="input input-bordered"
                 />
                 <input
                   type="text"
-                  placeholder="Harga Jual"
-                  {...tambahForm.register("hargaJual", {
-                    required: true,
-                    valueAsNumber: true,
-                  })}
+                  placeholder="PPN"
+                  {...tambahForm.register("ppn", { required: true })}
                   className="input input-bordered"
                 />
                 <select
-                  {...tambahForm.register("idSatuan", { required: true })}
+                  {...tambahForm.register("idChannel", { required: true })}
                   className="select select-bordered"
                 >
-                  <option value="">Pilih Satuan</option>
-                  {satuanList.data?.map((v) => (
+                  <option value="">Pilih Channel</option>
+                  {channelList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
-                      {v.nama} ({v.kode})
+                      {v.nama}
                     </option>
                   ))}
                 </select>
+                <input
+                  type="text"
+                  placeholder="Ref"
+                  {...tambahForm.register("ref", { required: true })}
+                  className="input input-bordered"
+                />
+                {/* <input
+                  type="date"
+                  // placeholder="Tanggal "
+                  {...tambahForm.register("tanggalTransaksi", {
+                    required: true,
+                  })}
+                  className="input input-bordered"
+                /> */}
                 <select
-                  {...tambahForm.register("idKategori", { required: true })}
+                  {...tambahForm.register("idKasir", { required: true })}
                   className="select select-bordered"
                 >
-                  <option value="">Pilih Kategori</option>
-                  {kategoriList.data?.map((v) => (
+                  <option value="">Pilih Kasir</option>
+                  {kasirList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
                       {v.nama}
                     </option>
@@ -299,68 +273,76 @@ export default function BarangPage() {
                 ✕
               </button>
             </form>
-            <h3 className="pb-4 text-center text-lg font-bold">Edit Barang</h3>
+            <h3 className="pb-4 text-center text-lg font-bold">
+              Edit Transaksi
+            </h3>
             <form id="formEdit" onSubmit={editForm.handleSubmit(editOnSubmit)}>
               <div className="flex flex-col gap-4">
                 <input
                   type="text"
-                  placeholder="ID Barang"
-                  id="editId"
-                  className="input input-bordered"
+                  placeholder="ID"
                   {...editForm.register("id", { required: true })}
-                  disabled
+                  className="input input-bordered"
                 />
                 <input
                   type="text"
-                  placeholder="Nama Barang"
-                  id="editNama"
-                  className="input input-bordered"
+                  placeholder="Nama Transaksi"
                   {...editForm.register("nama", { required: true })}
+                  className="input input-bordered"
                 />
                 <input
                   type="text"
-                  placeholder="Harga Beli"
-                  id="editHargaBeli"
+                  placeholder="Total"
+                  {...editForm.register("total", { required: true })}
                   className="input input-bordered"
-                  {...editForm.register("hargaBeli", { valueAsNumber: true })}
                 />
                 <input
                   type="text"
-                  placeholder="Harga Jual"
-                  id="editHargaJual"
+                  placeholder="PPN"
+                  {...editForm.register("ppn", { required: true })}
                   className="input input-bordered"
-                  {...editForm.register("hargaJual", { valueAsNumber: true })}
                 />
                 <select
-                  id="editSatuan"
+                  {...editForm.register("idChannel", { required: true })}
                   className="select select-bordered"
-                  {...editForm.register("idSatuan", { required: true })}
                 >
-                  <option value="">Pilih Satuan</option>
-                  {satuanList.data?.map((v) => (
+                  <option value="">Pilih Channel</option>
+                  {channelList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
-                      {v.nama} ({v.kode})
+                      {v.nama}
                     </option>
                   ))}
                 </select>
+                <input
+                  type="text"
+                  placeholder="Ref"
+                  {...editForm.register("ref", { required: true })}
+                  className="input input-bordered"
+                />
+                <input
+                  type="date"
+                  // placeholder="Tanggal "
+                  {...editForm.register("tanggalTransaksi", {
+                    required: true,
+                  })}
+                  className="input input-bordered"
+                />
                 <select
-                  id="editKategori"
+                  {...editForm.register("idKasir", { required: true })}
                   className="select select-bordered"
-                  {...editForm.register("idKategori", { required: true })}
                 >
-                  <option value="">Pilih Kategori</option>
-                  {kategoriList.data?.map((v) => (
+                  <option value="">Pilih Kasir</option>
+                  {kasirList.data?.map((v) => (
                     <option value={v.id} key={v.id}>
                       {v.nama}
                     </option>
                   ))}
                 </select>
                 <textarea
-                  id="editKeterangan"
+                  {...editForm.register("keterangan")}
                   placeholder="Keterangan"
                   rows={4}
                   className="textarea textarea-bordered"
-                  {...editForm.register("keterangan")}
                 ></textarea>
                 <div className="text-right">
                   <button className="btn btn-success" type="submit">

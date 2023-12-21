@@ -90,7 +90,9 @@ export default function Layout({
             <ul className="menu menu-horizontal px-1">{linksHtml}</ul>
           </div>
           <div className="navbar-end">
-            <a className="btn">Log out</a>
+            <a className="btn" href="/">
+              Log out
+            </a>
           </div>
         </div>
         <div className="container mx-auto">{children}</div>

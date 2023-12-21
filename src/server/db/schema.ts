@@ -72,15 +72,28 @@ export const channel = mysqlTable("channel", {
 
 export const transaksi = mysqlTable("transaksi", {
   id: char("id", { length: 25 }).primaryKey(),
-  nama: varchar("nama", { length: 200 }),
-  total: double("total"),
-  ppn: double("ppn"),
-  idChannel: char("id_channel", { length: 5 }),
-  ref: text("ref"),
-  tanggalTransaksi: datetime("tgl_transaksi").default(sql`CURRENT_TIMESTAMP`),
-  idKasir: char("id_kasir", { length: 5 }),
-  keterangan: text("keterangan"),
+  nama: varchar("nama", { length: 200 }).notNull(),
+  total: double("total").notNull(),
+  ppn: double("ppn").notNull(),
+  idChannel: char("id_channel", { length: 5 }).notNull(),
+  ref: text("ref").notNull(),
+  tanggalTransaksi: datetime("tgl_transaksi")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  idKasir: char("id_kasir", { length: 5 }).notNull(),
+  keterangan: text("keterangan").notNull(),
 });
+
+export const transaksiRelations = relations(transaksi, ({ one }) => ({
+  kasir: one(kasir, {
+    fields: [transaksi.idKasir],
+    references: [kasir.id],
+  }),
+  channel: one(channel, {
+    fields: [transaksi.idChannel],
+    references: [channel.id],
+  }),
+}));
 
 export const transaksiDetail = mysqlTable("transaksiDetail", {
   id: char("id", { length: 25 }).primaryKey(),
@@ -90,12 +103,28 @@ export const transaksiDetail = mysqlTable("transaksiDetail", {
   hargaBeli: double("hargabeli"),
   hargaJual: double("hargajual"),
   satuan: char("satuan", { length: 50 }),
+  jumlaBeli: int("jumlah_beli").notNull(),
   kategori: varchar("kategori", { length: 200 }),
   retur: char("retur", { length: 2 }),
   idKasir: char("id_kasir", { length: 5 }),
 });
 
+export const transaksiDetailRelations = relations(
+  transaksiDetail,
+  ({ one }) => ({
+    transaksi: one(transaksi, {
+      fields: [transaksiDetail.idTransaksi],
+      references: [transaksi.id],
+    }),
+    barang: one(barang, {
+      fields: [transaksiDetail.idBarang],
+      references: [barang.id],
+    }),
+  }),
+);
+
 export type Barang = InferSelectModel<typeof barang>;
 export type Kasir = InferSelectModel<typeof kasir>;
 export type Kategori = InferSelectModel<typeof kategori>;
 export type Satuan = InferSelectModel<typeof satuan>;
+export type Transaksi = InferSelectModel<typeof transaksi>;

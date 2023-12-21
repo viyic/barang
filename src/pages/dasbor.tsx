@@ -11,6 +11,7 @@ export default function Dasbor() {
   const satuan = api.satuan.getAll.useQuery();
   const kategori = api.kategori.getAll.useQuery();
   const kasir = api.kasir.getAll.useQuery();
+  const transaksi = api.transaksi.getThisMonthCount.useQuery();
 
   const modalTambah = useRef<HTMLDialogElement>(null);
   const modalEdit = useRef<HTMLDialogElement>(null);
@@ -137,24 +138,41 @@ export default function Dasbor() {
             <AuthShowcase /> */}
 
       <div className="container mx-auto">
-        <div className="mt-4 text-4xl font-bold">Dashboard</div>
+        <div className="mt-4 text-4xl font-bold">Dasbor</div>
         {/* Modal Tambah */}
         <ModalTambah ref={modalTambah} />
 
         {/* <!-- Modal Edit --> */}
         <ModalEdit ref={modalEdit} />
         {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="card mt-4 bg-success text-4xl shadow-xl">
-            <div className="card-body">
-              {barang.data ? `${barang.data.length} Barang` : "Memuat..."}
+        <div className="grid grid-cols-3 gap-4">
+          <Link href="/barang">
+            <div className="card mt-4 bg-success text-4xl shadow-xl">
+              <div className="card-body">
+                {barang.data != undefined
+                  ? `${barang.data.length} Barang`
+                  : "Memuat..."}
+              </div>
             </div>
-          </div>
-          <div className="card mt-4 bg-error text-4xl shadow-xl">
-            <div className="card-body">
-              {kasir.data ? `${kasir.data.length} Kasir` : "Memuat..."}
+          </Link>
+          <Link href="/kasir">
+            <div className="card mt-4 bg-error text-4xl shadow-xl">
+              <div className="card-body">
+                {kasir.data != undefined
+                  ? `${kasir.data.length} Kasir`
+                  : "Memuat..."}
+              </div>
             </div>
-          </div>
+          </Link>
+          <Link href="/transaksi">
+            <div className="card mt-4 bg-info text-4xl shadow-xl">
+              <div className="card-body">
+                {transaksi.data != undefined
+                  ? `${transaksi.data} Transaksi Bulan Ini`
+                  : "Memuat..."}
+              </div>
+            </div>
+          </Link>
         </div>
 
         <div
@@ -169,9 +187,9 @@ export default function Dasbor() {
               viewBox="0 0 24 24"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
