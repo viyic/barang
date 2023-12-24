@@ -5,7 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { Kasir, kasir } from "~/server/db/schema";
+import { type Kasir, kasir } from "~/server/db/schema";
 import CryptoJS from "crypto-js";
 import { eq } from "drizzle-orm";
 

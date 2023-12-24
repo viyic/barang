@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Layout from "~/components/Layout";
 import { Barang } from "~/server/db/schema";
@@ -61,6 +61,22 @@ export default function BarangPage() {
     }
   };
 
+  const imageOnSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const formData = new FormData(event?.currentTarget);
+      const response = await fetch("/api/upload-gambar", {
+        method: "POST",
+        body: formData,
+      });
+
+      // const data = await response.json();
+      // console.log(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   // const openToast = (text) => {
   //     const toast = document.querySelector('#toast');
   //     toast.textContent = text;
@@ -118,6 +134,14 @@ export default function BarangPage() {
           Tambah
         </button>
         {/* <div id="table"></div> */}
+
+        <form onSubmit={imageOnSubmit}>
+          <input type="hidden" name="id" value="100" />
+          <input type="file" name="image" accept="image/png" />
+          <button type="submit" className="btn">
+            Submit
+          </button>
+        </form>
 
         {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
         <div className="mt-4 overflow-x-auto">

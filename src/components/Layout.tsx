@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
+import { Package } from "@phosphor-icons/react";
 
 export default function Layout({
   title,
@@ -27,20 +28,6 @@ export default function Layout({
         <title>{title}</title>
         <meta name="description" content="Barang" />
         <link rel="icon" href="/favicon.ico" />
-        {/* <link
-          rel="stylesheet"
-          href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css"
-        />
-        <script
-          src="https://unpkg.com/gridjs/dist/gridjs.umd.js"
-          async
-        ></script>
-        <script src="https://unpkg.com/axios/dist/axios.min.js" async></script>
-        <link
-          href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css"
-          rel="stylesheet"
-          type="text/css"
-        /> */}
       </Head>
 
       <main data-theme="nord" className="min-h-screen">
@@ -85,6 +72,9 @@ export default function Layout({
                 </li> */}
               </ul>
             </div>
+            <Link href="/dasbor" className="btn btn-ghost">
+              <Package size="2rem" />
+            </Link>
           </div>
           <div className="navbar-center hidden lg:flex">
             <ul className="menu menu-horizontal px-1">{linksHtml}</ul>
@@ -95,7 +85,7 @@ export default function Layout({
             </a>
           </div>
         </div>
-        <div className="container mx-auto">{children}</div>
+        <div className="container mx-auto px-4">{children}</div>
       </main>
     </>
   );
