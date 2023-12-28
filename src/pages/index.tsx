@@ -1,3 +1,4 @@
+import { Package } from "@phosphor-icons/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { type SubmitHandler, useForm } from "react-hook-form";
@@ -29,11 +30,12 @@ export default function Login() {
 
       <main
         data-theme="nord"
-        className="flex h-full min-h-screen flex-col items-center justify-center"
+        className="flex h-full min-h-screen flex-col items-center justify-center bg-base-200"
       >
         <div className="card w-96 bg-base-100 shadow-xl">
           <form onSubmit={loginForm.handleSubmit(loginOnSubmit)}>
             <div className="card-body flex flex-col items-center gap-4">
+              <Package size="4rem" />
               <h2 className="card-title">Masuk</h2>
               <input
                 type="text"

@@ -1,9 +1,29 @@
-import { useRef } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { Minus, Plus } from "@phosphor-icons/react";
+import { use, useRef, useState } from "react";
+import {
+  type SubmitHandler,
+  useForm,
+  useFieldArray,
+  Control,
+  UseFormRegister,
+  Controller,
+} from "react-hook-form";
 import Layout from "~/components/Layout";
-import { type Transaksi } from "~/server/db/schema";
+import { type Transaksi, type TransaksiDetail } from "~/server/db/schema";
+import { Combobox } from "@headlessui/react";
 
 import { api } from "~/utils/api";
+
+type TambahTransaksi = Transaksi & {
+  detail: {
+    idDetail: string;
+    // idTransaksi: string;
+    idBarang: string;
+    // idKasir: string;
+    jumlahBeli: number;
+    retur: string;
+  }[];
+};
 
 export default function BarangPage() {
   const transaksiList = api.transaksi.getAll.useQuery();
@@ -16,10 +36,34 @@ export default function BarangPage() {
   const editModal = useRef<HTMLDialogElement>(null);
 
   const tambah = api.transaksi.create.useMutation();
-  const tambahForm = useForm<Transaksi>();
-  const tambahOnSubmit: SubmitHandler<Transaksi> = (data) => {
+  const tambahDetail = api.transaksiDetail.create.useMutation();
+  const tambahForm = useForm<TambahTransaksi>();
+  const tambahOnSubmit: SubmitHandler<TambahTransaksi> = (data) => {
     console.log(data);
-    tambah.mutate(data, { onSettled: () => void transaksiList.refetch() });
+    const dataTransaksi: Transaksi = data;
+    const dataTransaksiDetail: TransaksiDetail[] = data.detail.map(
+      (v) =>
+        ({
+          id: v.idDetail,
+          idTransaksi: data.id,
+          idBarang: v.idBarang,
+          namaBarang: "",
+          hargaBeli: 0,
+          hargaJual: 0,
+          satuan: "",
+          jumlahBeli: v.jumlahBeli,
+          kategori: "",
+          retur: v.retur,
+          idKasir: data.idKasir,
+        }) as TransaksiDetail,
+    );
+    tambah.mutate(dataTransaksi, {
+      onSettled: () => void transaksiList.refetch(),
+    });
+    for (const value of dataTransaksiDetail) {
+      void tambahDetail.mutateAsync(value);
+    }
+
     tambahModal.current?.close();
     tambahForm.reset();
   };
@@ -162,7 +206,7 @@ export default function BarangPage() {
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 shrink-0 stroke-current"
               fill="none"
-              viewBox="0 0 24 24"
+              viewBox="0 0 16 16"
             >
               <path
                 strokeLinecap="round"
@@ -203,15 +247,21 @@ export default function BarangPage() {
                   className="input input-bordered"
                 />
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Total"
-                  {...tambahForm.register("total", { required: true })}
+                  {...tambahForm.register("total", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                   className="input input-bordered"
                 />
                 <input
-                  type="text"
+                  type="number"
                   placeholder="PPN"
-                  {...tambahForm.register("ppn", { required: true })}
+                  {...tambahForm.register("ppn", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                   className="input input-bordered"
                 />
                 <select
@@ -231,14 +281,15 @@ export default function BarangPage() {
                   {...tambahForm.register("ref", { required: true })}
                   className="input input-bordered"
                 />
-                {/* <input
+                <input
                   type="date"
                   // placeholder="Tanggal "
                   {...tambahForm.register("tanggalTransaksi", {
                     required: true,
+                    valueAsDate: true,
                   })}
                   className="input input-bordered"
-                /> */}
+                />
                 <select
                   {...tambahForm.register("idKasir", { required: true })}
                   className="select select-bordered"
@@ -256,6 +307,10 @@ export default function BarangPage() {
                   rows={4}
                   className="textarea textarea-bordered"
                 ></textarea>
+                <TambahTransaksiDetail
+                  register={tambahForm.register}
+                  control={tambahForm.control}
+                />
                 <div className="text-right">
                   <button type="submit" className="btn btn-success">
                     Buat
@@ -357,3 +412,109 @@ export default function BarangPage() {
     </Layout>
   );
 }
+
+const TambahTransaksiDetail = ({
+  register,
+  control,
+}: {
+  register: UseFormRegister<TambahTransaksi>;
+  control: Control<TambahTransaksi>;
+}) => {
+  const limit = 10;
+  const [barangSearch, setBarangSearch] = useState("");
+  const barangList = api.barang.getAll.useQuery({
+    search: barangSearch,
+    limit,
+  });
+  const { fields, append, remove } = useFieldArray({
+    name: "detail",
+    control: control,
+  });
+  const tambahTransaksiDetailAppend = () => {
+    append({
+      idDetail: "",
+      idBarang: "",
+      jumlahBeli: 0,
+      retur: "",
+    });
+  };
+  const tambahTransaksiDetailRemove = (index: number) => {
+    remove(index);
+  };
+  return (
+    <>
+      <hr />
+      {fields.map((field, index) => {
+        return (
+          <div key={field.id} className="flex gap-4">
+            <div className="grid grow grid-cols-12 gap-4">
+              <input
+                type="text"
+                placeholder="ID"
+                {...register(`detail.${index}.idDetail`, { required: true })}
+                className="input input-bordered col-span-3"
+              />
+              <div className="dropdown col-span-6">
+                <Controller
+                  control={control}
+                  name={`detail.${index}.idBarang`}
+                  render={({ field }) => (
+                    <Combobox
+                      // {...register(`detail.${index}.idBarang`, { required: true })}
+                      value={field.value}
+                      // onChange={setBarangSelected}
+                      onChange={field.onChange}
+                    >
+                      <Combobox.Input
+                        className="input input-bordered w-full"
+                        onChange={(e) => setBarangSearch(e.target.value)}
+                        placeholder="Barang"
+                      />
+                      <Combobox.Options className="menu dropdown-content z-[1] mt-4 w-full rounded-btn bg-base-100 shadow">
+                        {barangList.status == "loading" ? (
+                          <div className="flex justify-center">
+                            <span className="loading loading-spinner loading-sm"></span>
+                          </div>
+                        ) : (
+                          barangList.data?.map((value) => (
+                            <Combobox.Option key={value.id} value={value.id}>
+                              <a>{value.nama}</a>
+                            </Combobox.Option>
+                          ))
+                        )}
+                      </Combobox.Options>
+                    </Combobox>
+                  )}
+                />
+              </div>
+              <input
+                type="number"
+                placeholder="Jumlah"
+                {...register(`detail.${index}.jumlahBeli`, {
+                  required: true,
+                  valueAsNumber: true,
+                })}
+                className="input input-bordered col-span-3"
+              />
+            </div>
+            <button
+              type="button"
+              className="btn btn-square btn-error"
+              onClick={() => tambahTransaksiDetailRemove(index)}
+            >
+              <Minus size={24} />
+            </button>
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={tambahTransaksiDetailAppend}
+      >
+        <Plus size={16} />
+      </button>
+      <hr />
+    </>
+  );
+};

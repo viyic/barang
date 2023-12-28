@@ -4,7 +4,7 @@ import Layout from "~/components/Layout";
 import { api } from "~/utils/api";
 
 export default function Dasbor() {
-  const barang = api.barang.getAll.useQuery();
+  const barang = api.barang.getAllCount.useQuery();
   const kasir = api.kasir.getAll.useQuery();
   const transaksi = api.transaksi.getThisMonthCount.useQuery();
 
@@ -16,8 +16,8 @@ export default function Dasbor() {
           <Link href="/barang">
             <div className="card mt-4 h-full bg-success text-4xl shadow-xl">
               <div className="card-body justify-end">
-                {barang.data != undefined
-                  ? `${barang.data.length} Barang`
+                {barang.data?.[0]
+                  ? `${barang.data[0].count} Barang`
                   : "Memuat..."}
               </div>
             </div>

@@ -33,6 +33,7 @@ export const kasirRouter = createTRPCRouter({
                 ).toString(),
               ).toString(),
             ),
+            eq(kasir.status, "Y"),
           ),
         // orderBy: (barang, { desc }) => [desc(barang.id)],
       });

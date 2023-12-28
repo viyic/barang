@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -6,30 +6,49 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { Barang, barang } from "~/server/db/schema";
+import { type Barang, barang } from "~/server/db/schema";
 
 export const barangRouter = createTRPCRouter({
-  // create: protectedProcedure
-  //   .input(z.object({ name: z.string().min(1) }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     // simulate a slow db call
-  //     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  //     await ctx.db.insert(posts).values({
-  //       name: input.name,
-  //       createdById: ctx.session.user.id,
-  //     });
-  //   }),
-
-  getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.barang.findMany({
-      with: {
-        kategori: true,
-        satuan: true,
-      },
-      limit: 10,
-      // orderBy: (barang, { desc }) => [desc(barang.id)],
-    });
+  getAll: publicProcedure
+    .input(
+      z
+        .object({
+          search: z.string().optional(),
+          offset: z.number().optional(),
+          limit: z.number().optional(),
+        })
+        .optional(),
+    )
+    .query(({ ctx, input }) => {
+      return ctx.db.query.barang.findMany({
+        with: {
+          kategori: true,
+          satuan: true,
+        },
+        offset: input?.offset,
+        limit: input?.limit,
+        where: (barang, { or, like }) => {
+          if (input?.search) {
+            const search = `%${input.search}%`;
+            return or(
+              like(barang.id, search),
+              like(barang.nama, search),
+              like(barang.hargaBeli, search),
+              like(barang.hargaJual, search),
+              like(barang.idSatuan, search),
+              like(barang.idKategori, search),
+              like(barang.qr, search),
+              like(barang.keterangan, search),
+            );
+          } else {
+            return undefined;
+          }
+        },
+        // orderBy: (barang, { desc }) => [desc(barang.id)],
+      });
+    }),
+  getAllCount: publicProcedure.query(({ ctx }) => {
+    return ctx.db.select({ count: sql<number>`count('*')` }).from(barang);
   }),
 
   getById: publicProcedure

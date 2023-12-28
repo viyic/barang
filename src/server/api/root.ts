@@ -5,6 +5,7 @@ import { kategoriRouter } from "./routers/kategori";
 import { kasirRouter } from "./routers/kasir";
 import { transaksiRouter } from "./routers/transaksi";
 import { channelRouter } from "./routers/channel";
+import { transaksiDetailRouter } from "./routers/transaksiDetail";
 
 /**
  * This is the primary router for your server.
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   kategori: kategoriRouter,
   kasir: kasirRouter,
   transaksi: transaksiRouter,
+  transaksiDetail: transaksiDetailRouter,
   channel: channelRouter,
 });
 

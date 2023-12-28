@@ -49,7 +49,7 @@ export const transaksiRouter = createTRPCRouter({
         ref: z.string().min(1),
         tanggalTransaksi: z.date(),
         idKasir: z.string().min(1),
-        keterangan: z.string().min(1),
+        keterangan: z.string(),
       }),
     )
     .mutation(({ ctx, input }) => {

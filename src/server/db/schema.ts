@@ -95,18 +95,18 @@ export const transaksiRelations = relations(transaksi, ({ one }) => ({
   }),
 }));
 
-export const transaksiDetail = mysqlTable("transaksiDetail", {
+export const transaksiDetail = mysqlTable("transaksi_detail", {
   id: char("id", { length: 25 }).primaryKey(),
-  idTransaksi: char("id_transaksi", { length: 25 }),
-  idBarang: char("id_barang", { length: 15 }),
-  namaBarang: varchar("nama_barang", { length: 200 }),
-  hargaBeli: double("hargabeli"),
-  hargaJual: double("hargajual"),
-  satuan: char("satuan", { length: 50 }),
-  jumlaBeli: int("jumlah_beli").notNull(),
-  kategori: varchar("kategori", { length: 200 }),
-  retur: char("retur", { length: 2 }),
-  idKasir: char("id_kasir", { length: 5 }),
+  idTransaksi: char("id_transaksi", { length: 25 }).notNull(),
+  idBarang: char("id_barang", { length: 15 }).notNull(),
+  namaBarang: varchar("nama_barang", { length: 200 }).notNull(),
+  hargaBeli: double("hargabeli").notNull(),
+  hargaJual: double("hargajual").notNull(),
+  satuan: char("satuan", { length: 50 }).notNull(),
+  jumlahBeli: int("jumlah_beli").notNull().notNull(),
+  kategori: varchar("kategori", { length: 200 }).notNull(),
+  retur: char("retur", { length: 2 }).notNull(),
+  idKasir: char("id_kasir", { length: 5 }).notNull(),
 });
 
 export const transaksiDetailRelations = relations(
@@ -120,6 +120,10 @@ export const transaksiDetailRelations = relations(
       fields: [transaksiDetail.idBarang],
       references: [barang.id],
     }),
+    kasir: one(kasir, {
+      fields: [transaksiDetail.idKasir],
+      references: [kasir.id],
+    }),
   }),
 );
 
@@ -128,3 +132,4 @@ export type Kasir = InferSelectModel<typeof kasir>;
 export type Kategori = InferSelectModel<typeof kategori>;
 export type Satuan = InferSelectModel<typeof satuan>;
 export type Transaksi = InferSelectModel<typeof transaksi>;
+export type TransaksiDetail = InferSelectModel<typeof transaksiDetail>;

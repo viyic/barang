@@ -1,5 +1,23 @@
+/* eslint-disable @next/next/no-img-element */
+import {
+  ArrowLeft,
+  ArrowRight,
+  Camera,
+  CaretLeft,
+  CaretRight,
+  MagnifyingGlass,
+  Printer,
+} from "@phosphor-icons/react";
 import Head from "next/head";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Layout from "~/components/Layout";
 import { Barang } from "~/server/db/schema";
@@ -7,7 +25,19 @@ import { Barang } from "~/server/db/schema";
 import { api } from "~/utils/api";
 
 export default function BarangPage() {
-  const barangList = api.barang.getAll.useQuery();
+  const limit = 10;
+  const [barangPage, setBarangPage] = useState(0);
+  const [barangSearch, setBarangSearch] = useState("");
+  const barangList = api.barang.getAll.useQuery({
+    search: barangSearch,
+    offset: barangPage * limit,
+    limit,
+  });
+
+  const handleBarangSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setBarangPage(0);
+    setBarangSearch(e.target.value);
+  };
   const satuanList = api.satuan.getAll.useQuery();
   const kategoriList = api.kategori.getAll.useQuery();
 
@@ -44,6 +74,9 @@ export default function BarangPage() {
     }
   };
 
+  const [editImage, setEditImage] = useState("");
+  const [editImageId, setEditImageId] = useState("");
+
   const editModalShow = async (id: string) => {
     const editBarang = await utils.barang.getById.query({
       id,
@@ -57,25 +90,27 @@ export default function BarangPage() {
       editForm.setValue("keterangan", editBarang.keterangan);
       editForm.setValue("idKategori", editBarang.idKategori);
       editForm.setValue("idSatuan", editBarang.idSatuan);
+      setEditImage("");
+      setEditImageId(editBarang.id);
       editModal.current?.showModal();
     }
   };
 
-  const imageOnSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    try {
-      const formData = new FormData(event?.currentTarget);
-      const response = await fetch("/api/upload-gambar", {
-        method: "POST",
-        body: formData,
-      });
+  // const imageOnSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   try {
+  //     const formData = new FormData(event?.currentTarget);
+  //     const response = await fetch("/api/upload-gambar", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
 
-      // const data = await response.json();
-      // console.log(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  //     // const data = await response.json();
+  //     // console.log(data);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   // const openToast = (text) => {
   //     const toast = document.querySelector('#toast');
@@ -93,39 +128,6 @@ export default function BarangPage() {
     return `Rp. ${jumlah.toLocaleString("id")}`;
   };
 
-  // new Grid({
-  //   columns: [
-  //     "ID",
-  //     "Nama",
-  //     {
-  //       name: "Harga Beli",
-  //       formatter: (cell) => formatRupiah(cell),
-  //     },
-  //     {
-  //       name: "Harga Jual",
-  //       formatter: (cell) => formatRupiah(cell),
-  //     },
-  //     "Satuan",
-  //     "Kategori",
-  //     "Keterangan",
-  //     {
-  //       name: "Aksi",
-  //       formatter: (cell) =>
-  //         gridjs.html(
-  //           `<div class="flex gap-4 justify-center"><button class="btn btn-primary" onclick="showEditModal('${cell}')">Edit</button><button class="btn btn-error" onclick="hapus(${cell})">Hapus</button></div>`,
-  //         ),
-  //     },
-  //   ],
-  //   search: true,
-  //   pagination: true,
-  //   data: [
-  //     // <?php foreach ($barang as $b) :
-  //     //     echo "['$b->id', '$b->nama', $b->hargabeli, $b->hargajual, '$b->nama_satuan', '$b->nama_kategori', '$b->keterangan', '$b->id'],";
-  //     // endforeach; ?>
-  //   ],
-  // }).render(document.getElementById("table"));
-  /* <AuthShowcase /> */
-
   return (
     <Layout title="Barang">
       <div className="container mx-auto">
@@ -133,17 +135,45 @@ export default function BarangPage() {
         <button type="button" className="btn mt-4" onClick={tambahModalShow}>
           Tambah
         </button>
-        {/* <div id="table"></div> */}
 
-        <form onSubmit={imageOnSubmit}>
-          <input type="hidden" name="id" value="100" />
-          <input type="file" name="image" accept="image/png" />
-          <button type="submit" className="btn">
-            Submit
-          </button>
-        </form>
-
-        {/* {kasir.data ? <li>{kasir.data}</li> : "Loading"} */}
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setBarangPage(barangPage - 1)}
+              disabled={barangPage <= 0}
+            >
+              <CaretLeft size={24} />
+            </button>
+            <p>Halaman {barangPage + 1}</p>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setBarangPage(barangPage + 1)}
+            >
+              <CaretRight size={24} />
+            </button>
+          </div>
+          <a
+            href="/api/cetak-excel"
+            className="btn btn-success"
+            target="_blank"
+          >
+            <Printer size={24} />
+            Cetak Excel
+          </a>
+          <div className="flex items-center gap-4">
+            <MagnifyingGlass size={24} />
+            <input
+              type="text"
+              className="input input-bordered"
+              placeholder="Cari"
+              value={barangSearch}
+              onChange={handleBarangSearch}
+            />
+          </div>
+        </div>
         <div className="mt-4 overflow-x-auto">
           <table className="table">
             <thead>
@@ -151,6 +181,7 @@ export default function BarangPage() {
                 {[
                   "ID",
                   "Nama Barang",
+                  "Gambar",
                   "Harga Beli",
                   "Harga Jual",
                   "Satuan",
@@ -179,6 +210,17 @@ export default function BarangPage() {
                   <tr className="hover" key={b.id}>
                     <td>{b.id}</td>
                     <td>{b.nama}</td>
+                    <td>
+                      <img
+                        src={`/img/barang/${b.id}.png`}
+                        className="rounded-btn"
+                        width={100}
+                        onError={(e) => {
+                          const element = e.target as HTMLImageElement;
+                          element.remove();
+                        }}
+                      />
+                    </td>
                     <td>{formatRupiah(b.hargaBeli)}</td>
                     <td>{formatRupiah(b.hargaJual)}</td>
                     <td>{b.satuan?.nama}</td>
@@ -386,6 +428,9 @@ export default function BarangPage() {
                   className="textarea textarea-bordered"
                   {...editForm.register("keterangan")}
                 ></textarea>
+
+                <ImageUpload imageId={editImageId} />
+
                 <div className="text-right">
                   <button className="btn btn-success" type="submit">
                     Simpan
@@ -399,3 +444,53 @@ export default function BarangPage() {
     </Layout>
   );
 }
+
+const ImageUpload = ({ imageId }: { imageId: string }) => {
+  const imageRef = useRef<HTMLInputElement>(null);
+  const imagePreviewRef = useRef<HTMLImageElement>(null);
+  const imageOnSubmit = async () => {
+    if (imageRef.current?.files?.[0]) {
+      try {
+        const formData = new FormData();
+        formData.append("id", imageId);
+        formData.append("image", imageRef.current.files[0]);
+        await fetch("/api/upload-gambar", {
+          method: "POST",
+          body: formData,
+        });
+        if (imagePreviewRef.current?.src) {
+          imagePreviewRef.current.src = imagePreviewRef.current.src;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4">
+      <input
+        type="file"
+        accept="image/png"
+        ref={imageRef}
+        onChange={imageOnSubmit}
+        hidden
+      />
+      <img
+        src={`/img/barang/${imageId}.png`}
+        className="w-1/2 rounded-btn"
+        ref={imagePreviewRef}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "";
+        }}
+      />
+      <button
+        type="button"
+        className="btn btn-square btn-info"
+        onClick={() => imageRef.current?.click()}
+      >
+        <Camera />
+      </button>
+    </div>
+  );
+};

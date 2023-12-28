@@ -2,6 +2,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { Package } from "@phosphor-icons/react";
+import NextTopLoader from "nextjs-toploader";
 
 export default function Layout({
   title,
@@ -30,6 +31,7 @@ export default function Layout({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <NextTopLoader color="#e5e9f0" />
       <main data-theme="nord" className="min-h-screen">
         <div className="navbar bg-accent">
           <div className="navbar-start">
